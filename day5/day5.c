@@ -3,26 +3,31 @@
 #include <string.h>
 #include <ctype.h>
 
-void react(char *data, int len);
-void chr_search_rm(char *data, char c);
+#define INT_MAX 2147483646
+#define FSIZE 1024 * 1000 * 2
+
+int react(char *data);
+void chr_search_rm(char *out, char *data, char c);
+
 
 void main()
 {
-    char data[65536] = "";
-    FILE *fd = fopen("D:\\input.txt", "r");
-    fread(data, 1, sizeof(data), fd);
+    char *data = calloc(FSIZE, 1);
+    FILE *fd = fopen("biginput", "r");
+    fread(data, 1, FSIZE, fd);
     fclose(fd);
-    int len = strlen(data);
-    react(data, len);
-    printf("PART 1: %d\n", strlen(data));
 
+    int len = react(data);
+    printf("PART 1: %d\n", len);
+    
     char *old_data = strdup(data);
+    char *buf = malloc(FSIZE);
     int min = INT_MAX;
-    for (int i = 0; i < 122 - 97 + 1; i++) {
-        chr_search_rm(data, 97 + i);
-        react(data, strlen(data));
-        if (strlen(data) < min) min = strlen(data);
-        strcpy(data, old_data);
+    for (int i = 0; i < 'z' - 'a' + 1; i++) {
+        memset(buf, 0, FSIZE);
+        chr_search_rm(buf, data, 'a' + i);
+        len = react(buf);
+        if (len < min) min = len;
     }
     printf("PART 2: %d\n", min);
 
@@ -31,40 +36,49 @@ void main()
 
 int is_opposite(char c1, char c2)
 {
-    if (c1 == '\0' || c2 == '\0') return 0;
+    //if (c1 == '\0' || c2 == '\0') return 0;
     return (tolower(c1) == tolower(c2) && c2 != c1);
 }
 
 
-void word_remove(char *data, int pos, int len)
+void chr_search_rm(char *out, char *data, char c)
 {
-    char tail[65536] = "";
-    strcpy(tail, data + pos + len);
-    strcpy(data + pos, tail);
+    int n = 0;
+    for (int i = 0; data[i]; i++) {
+        if (tolower(data[i]) != c) {
+            out[n] = data[i];
+            n++;
+        }
+    }
 }
 
 
-void chr_search_rm(char *data, char c)
+void pop(char *stack, int *sp)
 {
+    (*sp)--;
+    stack[*sp] = '\0';
+}
+
+void push(char *stack, int *sp, char val)
+{
+    stack[*sp] = val;
+    (*sp)++;
+}
+
+
+int react(char *data)
+{
+    char *stack = calloc(FSIZE, 1);
+    int sp = 0; //stack pointer
     int i = 0;
     for (; data[i]; i++) {
-        if (tolower(data[i]) == c) {
-            word_remove(data, i, 1);
-            i--;
+        push(stack, &sp, data[i]);
+        while (sp >= 2 && is_opposite(stack[sp - 1], stack[sp - 2])) {
+            pop(stack, &sp);
+            pop(stack, &sp);
         }
     }
-}
 
-
-void react(char *data, int len)
-{
-    int i = 0;
-    for (; i < len; i++) {
-        if (is_opposite(data[i], data[i+1])) {
-            word_remove(data, i, 2);
-            len -= 2;
-            i -= 2;
-        }
-    }
+    return strlen(stack);
 
 }

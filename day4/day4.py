@@ -12,7 +12,7 @@ def time_diff(before, after):
         return diff
 
 
-fd = open("day4.txt", "r")
+fd = open("big boye.txt", "r")
 lines = fd.read().splitlines()
 lines.sort()
 fd.close()
@@ -44,8 +44,8 @@ for line in lines:
                 sleep_schedule.append(int(time[1]))
 
 
-a = [[0 for i in range(0, 60)] for j in range(4000)]#a[4000][60]
-total = [0] * 4000
+a = [[0 for i in range(0, 60)] for j in range(5000)]#a[4000][60]
+total = [0] * 5000
 for i in range(0, len(sleep_schedule), 3):
         guard = sleep_schedule[i]
         sleepm = sleep_schedule[i+1]
